@@ -6,7 +6,6 @@ import { Server } from 'socket.io';
 const app = express()
 const server = http.createServer(app)
 const io = new Server(server);
-
 app.get('/', (req, res) => {
     res.send(
         `<h1>Hello world</h1>
@@ -21,7 +20,30 @@ app.get('/', (req, res) => {
     );
   });
 io.on('connection',(socket) => {
-    console.log("A user connected!");
+    const clientIp = socket.handshake.address;
+    console.log(`A user connected from IP: ${clientIp}`);
+  
+    socket.on('create-room', () => {
+        const roomCode = Math.random().toString(36).substring(2,8).toUpperCase();
+        socket.join(roomCode);
+        io.to(roomCode).emit('room-created',roomCode);
+    });
+
+    socket.on('join-room', (roomCode) => {
+        
+        const roomExists = io.sockets.adapter.rooms.has(roomCode);
+    
+        if(roomExists) {
+            socket.join(roomCode);
+            socket.emit('room-joined', roomCode)
+        }else {
+            socket.join('room-not-found')
+        }
+    });
+
+    socket.on('disconnect', () => {
+        console.log(`A user disconnected from IP: ${clientIp}`);
+    })
 })
   
-server.listen(4002, () => console.log(`Server started at port 4002`));
+server.listen(4004, () => console.log(`Server started at port 4004`));
