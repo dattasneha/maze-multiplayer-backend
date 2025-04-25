@@ -5,18 +5,15 @@ import { Server } from 'socket.io';
 
 const app = express()
 const server = http.createServer(app)
-const io = new Server(server);
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+    },
+});
 app.get('/', (req, res) => {
     res.send(
-        `<h1>Hello world</h1>
-        <script src="/socket.io/socket.io.js"></script>
-        <script>
-          const socket = io();
-    
-          socket.on('connect', () => {
-            console.log('Connected to server!');
-          });
-        </script>`
+        `<h1>Welcome to Maze-solver backend</h1>`
     );
   });
 io.on('connection',(socket) => {
