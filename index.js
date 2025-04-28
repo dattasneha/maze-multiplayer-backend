@@ -1,6 +1,7 @@
 import http from 'http'
 import express from 'express'
 import { Server } from 'socket.io';
+import { recursiveDivisionMaze } from './maze.js';
 
 
 const app = express()
@@ -32,10 +33,18 @@ io.on('connection',(socket) => {
     
         if(roomExists) {
             socket.join(roomCode);
-            socket.emit('room-joined', roomCode)
+            socket.emit('room-joined', roomCode);
         }else {
-            socket.join('room-not-found')
+            socket.emit('room-not-found');
         }
+    });
+
+    socket.on('create-maze', ({roomCode, grid, startNode, finishNode}) => {
+        console.log(roomCode,startNode);
+        let maze = recursiveDivisionMaze(grid, startNode,finishNode);
+        console.log(maze);
+        socket.join(roomCode);
+        io.to(roomCode).emit('maze-created', maze);
     });
 
     socket.on('disconnect', () => {
@@ -43,4 +52,4 @@ io.on('connection',(socket) => {
     })
 })
   
-server.listen(4004, () => console.log(`Server started at port 4004`));
+server.listen(process.env.port || 4004, () => console.log(`Server started at port 4004`));
