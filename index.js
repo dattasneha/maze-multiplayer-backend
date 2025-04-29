@@ -2,6 +2,7 @@ import http from 'http'
 import express from 'express'
 import { Server } from 'socket.io';
 import { recursiveDivisionMaze } from './maze.js';
+import { createMazeArray } from './converter.js';
 
 
 const app = express()
@@ -42,9 +43,11 @@ io.on('connection',(socket) => {
     socket.on('create-maze', ({roomCode, grid, startNode, finishNode}) => {
         console.log(roomCode,startNode);
         let maze = recursiveDivisionMaze(grid, startNode,finishNode);
-        console.log(maze);
+        console.log(grid.length);
+        let array = createMazeArray(grid.length, grid[0].length,maze);
+        console.log(array);
         socket.join(roomCode);
-        io.to(roomCode).emit('maze-created', maze);
+        io.to(roomCode).emit('maze-created',array);
     });
 
     socket.on('disconnect', () => {
